@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="IACUTILETTA">
+  <link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="%23f8fafc" stroke="%233b1b20" stroke-width="5"/><circle cx="37" cy="56" r="6" fill="%230f6b37"/><circle cx="63" cy="56" r="6" fill="%230f6b37"/><path d="M 42 46 L 63 46 L 68 59 L 36 59 Z" fill="%233b1b20"/><path d="M 40 59 L 64 59 L 64 63 L 40 63 Z" fill="%233b1b20"/><path d="M 47 48 H 59 M 49 51 H 59 M 51 54 H 59" stroke="%23ffffff" stroke-width="1.2"/><rect x="58" y="56" width="3" height="4" fill="%23ffffff"/><path d="M 10 60 Q 50 82 90 60 A 43.5 43.5 0 0 1 10 60 Z" fill="%230f6b37"/><path d="M 12 64 Q 50 86 88 64 Q 50 78 12 64 Z" fill="%23f8fafc"/><path d="M 14 67 Q 50 88 86 67 Q 50 80 14 67 Z" fill="%230f6b37"/><path d="M 18 73 Q 50 92 82 73 Q 50 84 18 73 Z" fill="%23f8fafc"/><path d="M 22 77 Q 50 94 78 77 Q 50 87 22 77 Z" fill="%230f6b37"/></svg>'>
+  <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="%23f8fafc" stroke="%233b1b20" stroke-width="5"/><circle cx="37" cy="56" r="6" fill="%230f6b37"/><circle cx="63" cy="56" r="6" fill="%230f6b37"/><path d="M 42 46 L 63 46 L 68 59 L 36 59 Z" fill="%233b1b20"/><path d="M 40 59 L 64 59 L 64 63 L 40 63 Z" fill="%233b1b20"/><path d="M 47 48 H 59 M 49 51 H 59 M 51 54 H 59" stroke="%23ffffff" stroke-width="1.2"/><rect x="58" y="56" width="3" height="4" fill="%23ffffff"/><path d="M 10 60 Q 50 82 90 60 A 43.5 43.5 0 0 1 10 60 Z" fill="%230f6b37"/><path d="M 12 64 Q 50 86 88 64 Q 50 78 12 64 Z" fill="%23f8fafc"/><path d="M 14 67 Q 50 88 86 67 Q 50 80 14 67 Z" fill="%230f6b37"/><path d="M 18 73 Q 50 92 82 73 Q 50 84 18 73 Z" fill="%23f8fafc"/><path d="M 22 77 Q 50 94 78 77 Q 50 87 22 77 Z" fill="%230f6b37"/></svg>'>
   <title>IACUTILETTA</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -21,7 +24,24 @@
   <!-- Header -->
   <header class="bg-indigo-600 text-white p-5 rounded-b-2xl shadow-lg sticky top-0 z-20">
     <div class="flex justify-between items-center mb-1">
-      <h1 class="text-sm font-extrabold tracking-wider uppercase opacity-95">IACUTILETTA</h1>
+      <div class="flex items-center gap-2.5">
+        <!-- Logo SVG Integrato -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-9 h-9 shadow-sm rounded-full flex-shrink-0">
+          <circle cx="50" cy="50" r="46" fill="#f8fafc" stroke="#3b1b20" stroke-width="5"/>
+          <circle cx="37" cy="56" r="6" fill="#0f6b37"/>
+          <circle cx="63" cy="56" r="6" fill="#0f6b37"/>
+          <path d="M 42 46 L 63 46 L 68 59 L 36 59 Z" fill="#3b1b20"/>
+          <path d="M 40 59 L 64 59 L 64 63 L 40 63 Z" fill="#3b1b20"/>
+          <path d="M 47 48 H 59 M 49 51 H 59 M 51 54 H 59" stroke="#ffffff" stroke-width="1.2"/>
+          <rect x="58" y="56" width="3" height="4" fill="#ffffff"/>
+          <path d="M 10 60 Q 50 82 90 60 A 43.5 43.5 0 0 1 10 60 Z" fill="#0f6b37"/>
+          <path d="M 12 64 Q 50 86 88 64 Q 50 78 12 64 Z" fill="#f8fafc"/>
+          <path d="M 14 67 Q 50 88 86 67 Q 50 80 14 67 Z" fill="#0f6b37"/>
+          <path d="M 18 73 Q 50 92 82 73 Q 50 84 18 73 Z" fill="#f8fafc"/>
+          <path d="M 22 77 Q 50 94 78 77 Q 50 87 22 77 Z" fill="#0f6b37"/>
+        </svg>
+        <h1 class="text-sm font-extrabold tracking-wider uppercase opacity-95">IACUTILETTA</h1>
+      </div>
       <div class="flex gap-2 no-print">
         <button onclick="exportPDF()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-1 px-2.5 rounded-lg border border-emerald-400 shadow-sm">
           📄 PDF
@@ -55,7 +75,7 @@
     </div>
 
     <div id="headerFotoInfo" class="mt-3 text-center bg-indigo-700/60 p-2.5 rounded-xl border border-indigo-500/30 hidden">
-      <p class="text-xs font-medium text-indigo-100" id="photoCount">0 Foto Lavori Salvate</p>
+      <p class="text-xs font-medium text-indigo-100" id="photoCount">0 Foto Salvate in IACUTILETTA</p>
     </div>
   </header>
 
