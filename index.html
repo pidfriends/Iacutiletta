@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>IACUTILETTA</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background-color: white !important; color: black !important; padding-bottom: 0 !important; }
+      header { position: static !important; box-shadow: none !important; border-radius: 0 !important; }
+      .card-item { break-inside: avoid; border: 1px solid #cbd5e1 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 pb-16 font-sans">
+
+  <!-- Header -->
+  <header class="bg-indigo-600 text-white p-5 rounded-b-2xl shadow-lg sticky top-0 z-20">
+    <div class="flex justify-between items-center mb-1">
+      <h1 class="text-sm font-extrabold tracking-wider uppercase opacity-95">IACUTILETTA</h1>
+      <div class="flex gap-2 no-print">
+        <button onclick="exportPDF()" class="bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold py-1 px-2.5 rounded-lg border border-emerald-400 shadow-sm">
+          📄 PDF
+        </button>
+        <button onclick="exportData()" class="bg-indigo-500 hover:bg-indigo-700 text-white text-xs py-1 px-2.5 rounded-lg border border-indigo-400">
+          💾 Backup
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigazione Tab -->
+    <nav class="flex bg-indigo-800/60 p-1 rounded-xl mt-3 no-print text-xs font-semibold">
+      <button id="tabBtnSpese" onclick="switchTab('spese')" class="flex-1 py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition-all text-center">
+        💰 Spese & Costi
+      </button>
+      <button id="tabBtnFoto" onclick="switchTab('foto')" class="flex-1 py-2 rounded-lg text-indigo-100 transition-all text-center">
+        📷 Foto Cantiere
+      </button>
+    </nav>
+    
+    <!-- Riepilogo Sostenuto / Da Sostenere -->
+    <div id="headerSpeseInfo" class="mt-3 grid grid-cols-2 gap-2 text-center bg-indigo-700/60 p-2.5 rounded-xl border border-indigo-500/30">
+      <div class="border-r border-indigo-500/40 pr-2">
+        <p class="text-[10px] font-medium uppercase tracking-wider text-emerald-200">Sostenuti (Pagati)</p>
+        <p class="text-lg font-bold text-emerald-300" id="totalPaid">€ 0,00</p>
+      </div>
+      <div class="pl-2">
+        <p class="text-[10px] font-medium uppercase tracking-wider text-amber-200">Da Sostenere</p>
+        <p class="text-lg font-bold text-amber-300" id="totalPending">€ 0,00</p>
+      </div>
+    </div>
+
+    <div id="headerFotoInfo" class="mt-3 text-center bg-indigo-700/60 p-2.5 rounded-xl border border-indigo-500/30 hidden">
+      <p class="text-xs font-medium text-indigo-100" id="photoCount">0 Foto Lavori Salvate</p>
+    </div>
+  </header>
+
+  <main class="max-w-md mx-auto p-4 space-y-5">
+
+    <!-- ================= SEZIONE SPESE ================= -->
+    <div id="tabSpese">
+      <section class="bg-white p-4 rounded-xl shadow-md border border-slate-200 no-print mb-5">
+        <h2 class="text-base font-bold mb-3 text-slate-700">Nuova Spesa / Preventivo</h2>
+        <form id="expenseForm" class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Descrizione / Fornitore</label>
+            <input type="text" id="title" required placeholder="Es. Acconto Idraulico, Piastrelle..." class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Importo (€)</label>
+              <input type="number" step="0.01" id="amount" required placeholder="0.00" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Stato Costo</label>
+              <select id="status" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none font-medium">
+                <option value="sostenuto" class="text-emerald-700">Sostenuto (Pagato)</option>
+                <option value="da_sostenere" class="text-amber-700">Da sostenere</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Categoria</label>
+              <select id="category" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="Materiali">Materiali</option>
+                <option value="Manodopera">Manodopera</option>
+                <option value="Professionisti">Professionisti</option>
+                <option value="Permessi/Tasse">Permessi/Tasse</option>
+                <option value="Arredo">Arredo</option>
+                <option value="Altro">Altro</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Data</label>
+              <input type="date" id="date" required class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Ricevuta / Documento (Opzionale)</label>
+            <input type="file" id="file" accept="image/*,application/pdf" capture="environment" class="w-full text-xs text-slate-500 file:mr-2 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+          </div>
+
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow-sm transition-all text-sm mt-2">
+            + Aggiungi Spesa
+          </button>
+        </form>
+      </section>
+
+      <section class="flex bg-slate-200 p-1 rounded-xl text-xs font-semibold no-print mb-3">
+        <button onclick="setStatusFilter('all')" id="statusTab-all" class="flex-1 py-1.5 rounded-lg bg-white shadow-xs text-indigo-700 transition-all">Tutti</button>
+        <button onclick="setStatusFilter('sostenuto')" id="statusTab-sostenuto" class="flex-1 py-1.5 rounded-lg text-slate-600 transition-all">Sostenuti</button>
+        <button onclick="setStatusFilter('da_sostenere')" id="statusTab-da_sostenere" class="flex-1 py-1.5 rounded-lg text-slate-600 transition-all">Da Sostenere</button>
+      </section>
+
+      <section class="flex gap-2 overflow-x-auto pb-1 text-xs no-scrollbar no-print mb-4" id="categoryFilters">
+        <button onclick="filterCategory('Tutti')" class="px-3 py-1.5 rounded-full bg-indigo-600 text-white font-medium whitespace-nowrap filter-cat-btn">Tutte le cat.</button>
+        <button onclick="filterCategory('Materiali')" class="px-3 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 font-medium whitespace-nowrap filter-cat-btn">Materiali</button>
+        <button onclick="filterCategory('Manodopera')" class="px-3 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 font-medium whitespace-nowrap filter-cat-btn">Manodopera</button>
+        <button onclick="filterCategory('Professionisti')" class="px-3 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 font-medium whitespace-nowrap filter-cat-btn">Professionisti</button>
+        <button onclick="filterCategory('Permessi/Tasse')" class="px-3 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 font-medium whitespace-nowrap filter-cat-btn">Permessi/Tasse</button>
+      </section>
+
+      <section class="space-y-3" id="expenseList"></section>
+    </div>
+
+    <!-- ================= SEZIONE FOTO CANTIERE ================= -->
+    <div id="tabFoto" class="hidden">
+      <section class="bg-white p-4 rounded-xl shadow-md border border-slate-200 no-print mb-5">
+        <h2 class="text-base font-bold mb-3 text-slate-700">Scatta / Aggiungi Foto Lavori</h2>
+        <form id="photoForm" class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Seleziona o Scatta Foto *</label>
+            <input type="file" id="cantiereFile" accept="image/*" capture="environment" required class="w-full text-xs text-slate-500 file:mr-2 file:py-2.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-500 mb-1">Descrizione / Stato Lavori</label>
+            <input type="text" id="photoNote" required placeholder="Es. Demolizione pareti, Tracce elettriche..." class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Stanza / Zona</label>
+              <select id="photoZone" class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                <option value="Generale">Generale</option>
+                <option value="Cucina">Cucina</option>
+                <option value="Bagno">Bagno</option>
+                <option value="Zona Giorno">Zona Giorno</option>
+                <option value="Zona Notte">Zona Notte</option>
+                <option value="Esterno/Facciata">Esterno/Facciata</option>
+                <option value="Impianti">Impianti</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-500 mb-1">Data Scatto</label>
+              <input type="date" id="photoDate" required class="w-full p-2.5 border rounded-lg text-sm bg-slate-50 focus:bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-lg shadow-sm transition-all text-sm mt-2">
+            📸 Salva Foto Diario
+          </button>
+        </form>
+      </section>
+
+      <section class="grid grid-cols-2 gap-3" id="photoGallery"></section>
+    </div>
+
+  </main>
+
+  <!-- Modal Anteprima Immagine Grande -->
+  <div id="imageModal" class="fixed inset-0 bg-black/90 hidden flex-col items-center justify-center z-50 p-4 no-print" onclick="closeModal()">
+    <img id="modalImg" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl object-contain mb-3" src="" alt="Anteprima">
+    <p id="modalCaption" class="text-white text-xs text-center max-w-sm font-medium bg-slate-900/80 px-3 py-1.5 rounded-full"></p>
+  </div>
+
+  <script>
+    const DB_NAME = 'IacutilettaDB';
+    const DB_VERSION = 2;
+    let db;
+    let currentCategoryFilter = 'Tutti';
+    let currentStatusFilter = 'all';
+
+    document.getElementById('date').valueAsDate = new Date();
+    document.getElementById('photoDate').valueAsDate = new Date();
+
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const database = e.target.result;
+          if (!database.objectStoreNames.contains('expenses')) {
+            database.createObjectStore('expenses', { keyPath: 'id', autoIncrement: true });
+          }
+          if (!database.objectStoreNames.contains('cantiere_photos')) {
+            database.createObjectStore('cantiere_photos', { keyPath: 'id', autoIncrement: true });
+          }
+        };
+        req.onsuccess = (e) => { db = e.target.result; resolve(); };
+        req.onerror = (e) => reject(e.target.error);
+      });
+    }
+
+    function switchTab(tab) {
+      const tabSpese = document.getElementById('tabSpese');
+      const tabFoto = document.getElementById('tabFoto');
+      const btnSpese = document.getElementById('tabBtnSpese');
+      const btnFoto = document.getElementById('tabBtnFoto');
+      const headerSpese = document.getElementById('headerSpeseInfo');
+      const headerFoto = document.getElementById('headerFotoInfo');
+
+      if (tab === 'spese') {
+        tabSpese.classList.remove('hidden');
+        tabFoto.classList.add('hidden');
+        btnSpese.className = "flex-1 py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition-all text-center";
+        btnFoto.className = "flex-1 py-2 rounded-lg text-indigo-100 transition-all text-center";
+        headerSpese.classList.remove('hidden');
+        headerFoto.classList.add('hidden');
+      } else {
+        tabSpese.classList.add('hidden');
+        tabFoto.classList.remove('hidden');
+        btnFoto.className = "flex-1 py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition-all text-center";
+        btnSpese.className = "flex-1 py-2 rounded-lg text-indigo-100 transition-all text-center";
+        headerSpese.classList.add('hidden');
+        headerFoto.classList.remove('hidden');
+      }
+    }
+
+    async function addExpense(expense) {
+      const tx = db.transaction('expenses', 'readwrite');
+      await tx.objectStore('expenses').add(expense);
+    }
+
+    async function getAllExpenses() {
+      return new Promise((resolve) => {
+        const tx = db.transaction('expenses', 'readonly');
+        const req = tx.objectStore('expenses').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+      });
+    }
+
+    async function deleteExpense(id) {
+      if (!confirm('Vuoi eliminare questa voce di spesa?')) return;
+      const tx = db.transaction('expenses', 'readwrite');
+      await tx.objectStore('expenses').delete(id);
+      render();
+    }
+
+    async function toggleStatus(id) {
+      const tx = db.transaction('expenses', 'readwrite');
+      const store = tx.objectStore('expenses');
+      const req = store.get(id);
+      req.onsuccess = () => {
+        const item = req.result;
+        item.status = (item.status === 'da_sostenere') ? 'sostenuto' : 'da_sostenere';
+        store.put(item);
+        tx.oncomplete = () => render();
+      };
+    }
+
+    async function addCantierePhoto(photoData) {
+      const tx = db.transaction('cantiere_photos', 'readwrite');
+      await tx.objectStore('cantiere_photos').add(photoData);
+    }
+
+    async function getAllCantierePhotos() {
+      return new Promise((resolve) => {
+        const tx = db.transaction('cantiere_photos', 'readonly');
+        const req = tx.objectStore('cantiere_photos').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+      });
+    }
+
+    async function deleteCantierePhoto(id) {
+      if (!confirm('Vuoi eliminare questa foto dal diario?')) return;
+      const tx = db.transaction('cantiere_photos', 'readwrite');
+      await tx.objectStore('cantiere_photos').delete(id);
+      render();
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve) => {
+        if (!file) return resolve(null);
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('file');
+      const fileData = fileInput.files[0] ? await fileToBase64(fileInput.files[0]) : null;
+
+      const expense = {
+        title: document.getElementById('title').value,
+        amount: parseFloat(document.getElementById('amount').value),
+        status: document.getElementById('status').value,
+        category: document.getElementById('category').value,
+        date: document.getElementById('date').value,
+        fileData: fileData,
+        timestamp: Date.now()
+      };
+
+      await addExpense(expense);
+      document.getElementById('expenseForm').reset();
+      document.getElementById('date').valueAsDate = new Date();
+      render();
+    });
+
+    document.getElementById('photoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('cantiereFile');
+      if (!fileInput.files[0]) return;
+
+      const fileData = await fileToBase64(fileInput.files[0]);
+
+      const photoEntry = {
+        note: document.getElementById('photoNote').value,
+        zone: document.getElementById('photoZone').value,
+        date: document.getElementById('photoDate').value,
+        fileData: fileData,
+        timestamp: Date.now()
+      };
+
+      await addCantierePhoto(photoEntry);
+      document.getElementById('photoForm').reset();
+      document.getElementById('photoDate').valueAsDate = new Date();
+      render();
+    });
+
+    async function render() {
+      await renderExpenses();
+      await renderPhotos();
+    }
+
+    async function renderExpenses() {
+      const expenses = await getAllExpenses();
+      const list = document.getElementById('expenseList');
+      list.innerHTML = '';
+
+      let paidTotal = 0;
+      let pendingTotal = 0;
+
+      expenses.forEach(exp => {
+        const status = exp.status || 'sostenuto';
+        if (status === 'da_sostenere') {
+          pendingTotal += exp.amount;
+        } else {
+          paidTotal += exp.amount;
+        }
+      });
+
+      document.getElementById('totalPaid').innerText = `€ ${paidTotal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+      document.getElementById('totalPending').innerText = `€ ${pendingTotal.toLocaleString('it-IT', { minimumFractionDigits: 2 })}`;
+
+      const filtered = expenses.filter(exp => {
+        const itemStatus = exp.status || 'sostenuto';
+        const matchesStatus = (currentStatusFilter === 'all') || (itemStatus === currentStatusFilter);
+        const matchesCat = (currentCategoryFilter === 'Tutti') || (exp.category === currentCategoryFilter);
+        return matchesStatus && matchesCat;
+      });
+
+      filtered.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="text-center text-slate-400 text-sm py-8">Nessuna spesa trovata.</p>`;
+        return;
+      }
+
+      filtered.forEach(exp => {
+        const status = exp.status || 'sostenuto';
+        const isPaid = status === 'sostenuto';
+
+        const card = document.createElement('div');
+        card.className = `card-item bg-white p-3.5 rounded-xl shadow-sm border ${isPaid ? 'border-slate-200' : 'border-amber-200 bg-amber-50/20'} flex items-center justify-between gap-3`;
+        
+        let fileBadge = exp.fileData 
+          ? `<button onclick="openModal('${exp.fileData}', '${exp.title}')" class="w-12 h-12 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 flex items-center justify-center no-print">
+               ${exp.fileData.startsWith('data:image') 
+                 ? `<img src="${exp.fileData}" class="w-full h-full object-cover">` 
+                 : `<span class="text-xs font-bold text-slate-500">PDF</span>`}
+             </button>`
+          : `<div class="w-12 h-12 flex-shrink-0 bg-slate-50 rounded-lg border border-dashed border-slate-200 flex items-center justify-center text-slate-300 text-[10px] no-print">No Foto</div>`;
+
+        let statusBadge = isPaid
+          ? `<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">Pagato</span>`
+          : `<span class="inline-block px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-800">Da Sostenere</span>`;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-3 overflow-hidden">
+            ${fileBadge}
+            <div class="truncate">
+              <h3 class="font-semibold text-slate-800 text-sm truncate">${exp.title}</h3>
+              <div class="flex items-center gap-2 mt-0.5">
+                ${statusBadge}
+                <p class="text-xs text-slate-400 truncate">${exp.date} • <span class="text-indigo-600 font-medium">${exp.category}</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0">
+            <p class="font-bold ${isPaid ? 'text-slate-800' : 'text-amber-700'} text-sm">€ ${exp.amount.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</p>
+            <div class="flex items-center justify-end gap-2 mt-1 no-print">
+              <button onclick="toggleStatus(${exp.id})" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                ${isPaid ? 'Segna Da Sostenere' : 'Segna Pagato'}
+              </button>
+              <button onclick="deleteExpense(${exp.id})" class="text-xs text-red-500 hover:text-red-700">Elimina</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    async function renderPhotos() {
+      const photos = await getAllCantierePhotos();
+      const gallery = document.getElementById('photoGallery');
+      gallery.innerHTML = '';
+
+      document.getElementById('photoCount').innerText = `${photos.length} Foto Salvate in IACUTILETTA`;
+
+      photos.sort((a,b) => new Date(b.date) - new Date(a.date));
+
+      if (photos.length === 0) {
+        gallery.innerHTML = `<p class="col-span-2 text-center text-slate-400 text-sm py-8">Nessuna foto del cantiere caricata.</p>`;
+        return;
+      }
+
+      photos.forEach(item => {
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between";
+        card.innerHTML = `
+          <div class="relative aspect-square bg-slate-100 cursor-pointer" onclick="openModal('${item.fileData}', '${item.note} (${item.zone})')">
+            <img src="${item.fileData}" class="w-full h-full object-cover">
+            <span class="absolute bottom-1.5 left-1.5 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-medium">${item.zone}</span>
+          </div>
+          <div class="p-2.5 flex-1 flex flex-col justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-800 line-clamp-2">${item.note}</p>
+              <p class="text-[10px] text-slate-400 mt-0.5">${item.date}</p>
+            </div>
+            <button onclick="deleteCantierePhoto(${item.id})" class="text-[11px] text-red-500 hover:text-red-700 mt-2 font-medium text-left">
+              Elimina
+            </button>
+          </div>
+        `;
+        gallery.appendChild(card);
+      });
+    }
+
+    function setStatusFilter(status) {
+      currentStatusFilter = status;
+      ['all', 'sostenuto', 'da_sostenere'].forEach(st => {
+        const tab = document.getElementById(`statusTab-${st}`);
+        if (st === status) {
+          tab.className = "flex-1 py-1.5 rounded-lg bg-white shadow-xs text-indigo-700 font-semibold transition-all";
+        } else {
+          tab.className = "flex-1 py-1.5 rounded-lg text-slate-600 transition-all";
+        }
+      });
+      render();
+    }
+
+    function filterCategory(cat) {
+      currentCategoryFilter = cat;
+      document.querySelectorAll('.filter-cat-btn').forEach(btn => {
+        if (btn.innerText.includes(cat) || (cat === 'Tutti' && btn.innerText.includes('Tutte'))) {
+          btn.className = "px-3 py-1.5 rounded-full bg-indigo-600 text-white font-medium whitespace-nowrap filter-cat-btn";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-full bg-white text-slate-600 border border-slate-200 font-medium whitespace-nowrap filter-cat-btn";
+        }
+      });
+      render();
+    }
+
+    function openModal(src, caption = '') {
+      if (src.startsWith('data:application/pdf')) {
+        const win = window.open();
+        win.document.write(`<iframe src="${src}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      } else {
+        document.getElementById('modalImg').src = src;
+        document.getElementById('modalCaption').innerText = caption;
+        document.getElementById('imageModal').classList.remove('hidden');
+        document.getElementById('imageModal').classList.add('flex');
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('imageModal').classList.add('hidden');
+      document.getElementById('imageModal').classList.remove('flex');
+    }
+
+    function exportPDF() {
+      window.print();
+    }
+
+    async function exportData() {
+      const expenses = await getAllExpenses();
+      const photos = await getAllCantierePhotos();
+      const fullBackup = { app: 'IACUTILETTA', expenses, cantiere_photos: photos };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `backup_IACUTILETTA_${new Date().toISOString().slice(0,10)}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    window.onload = async () => {
+      await initDB();
+      render();
+    };
+  </script>
+</body>
+</html>
